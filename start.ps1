@@ -97,7 +97,7 @@ function Start-DevMode {
     Write-Host ""
 
     try {
-        npx electron-vite dev
+        npm run dev
     }
     finally {
         Write-Host ""
@@ -116,7 +116,7 @@ function Invoke-TypeCheck {
     Write-Host "============================================" -ForegroundColor $Colors.Primary
     Write-Host ""
 
-    npx tsc --noEmit -p tsconfig.json --composite false
+    npm run typecheck
     if ($LASTEXITCODE -ne 0) {
         Write-Host ""
         Write-Host "[失败] 类型检查未通过，请修复错误后再构建。" -ForegroundColor $Colors.Error
@@ -138,7 +138,7 @@ function Invoke-ProductionBuild {
     Write-Host "============================================" -ForegroundColor $Colors.Primary
     Write-Host ""
 
-    npx electron-vite build
+    npm run build
     if ($LASTEXITCODE -ne 0) {
         Write-Host ""
         Write-Host "[失败] 构建失败，请检查错误信息。" -ForegroundColor $Colors.Error

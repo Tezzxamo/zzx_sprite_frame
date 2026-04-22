@@ -62,7 +62,7 @@ echo     正在启动开发模式...
 echo     按 Ctrl+C 停止服务器
 echo ============================================
 echo.
-npx electron-vite dev
+npm run dev
 pause
 goto MENU
 
@@ -74,7 +74,7 @@ echo ============================================
 echo     正在运行类型检查...
 echo ============================================
 echo.
-npx tsc --noEmit -p tsconfig.json --composite false
+npm run typecheck
 if errorlevel 1 (
     echo.
     echo [失败] 类型检查未通过，请修复错误后再构建。
@@ -93,7 +93,7 @@ echo ============================================
 echo     正在构建生产版本...
 echo ============================================
 echo.
-npx electron-vite build
+npm run build
 if errorlevel 1 (
     echo.
     echo [失败] 构建失败，请检查错误信息。
