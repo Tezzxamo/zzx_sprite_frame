@@ -5,7 +5,6 @@ import * as fs from 'fs';
 
 // 查找 FFmpeg 可执行文件路径
 function getFfmpegPath(): string | undefined {
-  // 优先使用 ffmpeg-static（开发环境和生产环境都适用，因 asarUnpack 已配置）
   try {
     const ffmpegStatic = require('ffmpeg-static');
     if (ffmpegStatic && fs.existsSync(ffmpegStatic)) {
@@ -14,15 +13,31 @@ function getFfmpegPath(): string | undefined {
   } catch {
     // ffmpeg-static 未安装或路径无效
   }
-  
-  // 回退到系统 PATH
   return undefined;
 }
 
-// 初始化 FFmpeg 路径
+// 查找 FFprobe 可执行文件路径
+function getFfprobePath(): string | undefined {
+  try {
+    const ffprobeStatic = require('ffprobe-static');
+    if (ffprobeStatic && fs.existsSync(ffprobeStatic)) {
+      return ffprobeStatic;
+    }
+  } catch {
+    // ffprobe-static 未安装或路径无效
+  }
+  return undefined;
+}
+
+// 初始化 FFmpeg / FFprobe 路径
 const ffmpegPath = getFfmpegPath();
+const ffprobePath = getFfprobePath();
+
 if (ffmpegPath) {
   ffmpeg.setFfmpegPath(ffmpegPath);
+}
+if (ffprobePath) {
+  ffmpeg.setFfprobePath(ffprobePath);
 }
 
 export { ffmpeg };
