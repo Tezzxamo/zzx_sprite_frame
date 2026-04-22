@@ -3,8 +3,6 @@ chcp 65001 >nul
 title ZZX SpriteFrame 启动工具
 color 0B
 
-setlocal EnableDelayedExpansion
-
 :MENU
 cls
 echo ============================================
@@ -32,30 +30,34 @@ echo 无效选择，请重试...
 timeout /t 2 >nul
 goto MENU
 
-:CHECK_NODE
+REM ============================================================
+REM  开发模式启动
+REM ============================================================
+:DEV
 echo [检查] Node.js 环境...
-node --version >nul 2>&1
-if errorlevel 1 (
+where node >nul 2>nul
+if %errorlevel% neq 0 (
     echo [错误] 未检测到 Node.js，请先安装 Node.js (推荐 v18+)
+    echo        下载地址: https://nodejs.org/
     pause
     goto MENU
 )
-echo [通过] Node.js 版本: 
-node --version
-echo.
-goto :EOF
+for /f "tokens=*" %%a in ('node --version') do echo [通过] Node.js 版本: %%a
 
-:CHECK_DEPS
 echo [检查] 项目依赖...
 if not exist "node_modules" (
     echo [提示] 未检测到 node_modules，将自动安装依赖...
-    call :INSTALL
+    npm install --registry=https://registry.npmmirror.com
+    if %errorlevel% neq 0 (
+        echo [失败] 依赖安装失败，请检查网络连接。
+        pause
+        goto MENU
+    )
+    echo [成功] 依赖安装完成！
+) else (
+    echo [通过] 依赖已安装
 )
-goto :EOF
 
-:DEV
-call :CHECK_NODE
-call :CHECK_DEPS
 cls
 echo ============================================
 echo     正在启动开发模式...
@@ -63,19 +65,39 @@ echo     按 Ctrl+C 停止服务器
 echo ============================================
 echo.
 npm run dev
+if %errorlevel% neq 0 (
+    echo.
+    echo [失败] 开发模式启动失败，请检查上面的错误信息。
+)
 pause
 goto MENU
 
+REM ============================================================
+REM  类型检查
+REM ============================================================
 :TYPECHECK
-call :CHECK_NODE
-call :CHECK_DEPS
+echo [检查] Node.js 环境...
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [错误] 未检测到 Node.js
+    pause
+    goto MENU
+)
+
+echo [检查] 项目依赖...
+if not exist "node_modules" (
+    echo [错误] 未检测到 node_modules，请先安装依赖 (选项 5)
+    pause
+    goto MENU
+)
+
 cls
 echo ============================================
 echo     正在运行类型检查...
 echo ============================================
 echo.
 npm run typecheck
-if errorlevel 1 (
+if %errorlevel% neq 0 (
     echo.
     echo [失败] 类型检查未通过，请修复错误后再构建。
 ) else (
@@ -85,16 +107,32 @@ if errorlevel 1 (
 pause
 goto MENU
 
+REM ============================================================
+REM  生产构建
+REM ============================================================
 :BUILD
-call :CHECK_NODE
-call :CHECK_DEPS
+echo [检查] Node.js 环境...
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [错误] 未检测到 Node.js
+    pause
+    goto MENU
+)
+
+echo [检查] 项目依赖...
+if not exist "node_modules" (
+    echo [错误] 未检测到 node_modules，请先安装依赖 (选项 5)
+    pause
+    goto MENU
+)
+
 cls
 echo ============================================
 echo     正在构建生产版本...
 echo ============================================
 echo.
 npm run build
-if errorlevel 1 (
+if %errorlevel% neq 0 (
     echo.
     echo [失败] 构建失败，请检查错误信息。
 ) else (
@@ -104,9 +142,25 @@ if errorlevel 1 (
 pause
 goto MENU
 
+REM ============================================================
+REM  打包安装包
+REM ============================================================
 :DIST
-call :CHECK_NODE
-call :CHECK_DEPS
+echo [检查] Node.js 环境...
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [错误] 未检测到 Node.js
+    pause
+    goto MENU
+)
+
+echo [检查] 项目依赖...
+if not exist "node_modules" (
+    echo [错误] 未检测到 node_modules，请先安装依赖 (选项 5)
+    pause
+    goto MENU
+)
+
 cls
 echo ============================================
 echo     正在打包 Windows 安装包...
@@ -114,7 +168,7 @@ echo     这可能需要几分钟...
 echo ============================================
 echo.
 npm run dist:win
-if errorlevel 1 (
+if %errorlevel% neq 0 (
     echo.
     echo [失败] 打包失败，请检查错误信息。
 ) else (
@@ -124,8 +178,18 @@ if errorlevel 1 (
 pause
 goto MENU
 
+REM ============================================================
+REM  安装依赖
+REM ============================================================
 :INSTALL
-call :CHECK_NODE
+echo [检查] Node.js 环境...
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [错误] 未检测到 Node.js
+    pause
+    goto MENU
+)
+
 cls
 echo ============================================
 echo     正在安装依赖...
@@ -133,7 +197,7 @@ echo     首次安装可能需要 1-3 分钟
 echo ============================================
 echo.
 npm install --registry=https://registry.npmmirror.com
-if errorlevel 1 (
+if %errorlevel% neq 0 (
     echo.
     echo [失败] 依赖安装失败，请检查网络连接。
 ) else (
@@ -143,6 +207,9 @@ if errorlevel 1 (
 pause
 goto MENU
 
+REM ============================================================
+REM  退出
+REM ============================================================
 :EXIT
 echo 感谢使用 ZZX SpriteFrame！
 timeout /t 1 >nul
