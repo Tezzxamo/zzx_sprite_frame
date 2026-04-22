@@ -1,10 +1,14 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import { pathToFileURL } from 'url'
 import { IPC_CHANNELS } from '../types'
 
 // 暴露给渲染进程的 API
 const api = {
   // 平台信息
   platform: process.platform,
+
+  // 将本地文件路径转换为可在 <video> / <img> 中使用的 file:// URL
+  getVideoFileUrl: (filePath: string) => pathToFileURL(filePath).href,
 
   // 选择视频文件
   selectVideoFile: () => ipcRenderer.invoke(IPC_CHANNELS.SELECT_VIDEO_FILE),

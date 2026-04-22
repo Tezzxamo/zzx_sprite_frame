@@ -34,7 +34,7 @@ export default function PreviewPanel() {
 
     // 创建视频元素来抓取当前帧
     const video = document.createElement('video');
-    video.src = `file://${videoInfo.path}`;
+    video.src = window.electronAPI.getVideoFileUrl(videoInfo.path);
     video.muted = true;
     video.currentTime = currentTime;
     video.crossOrigin = 'anonymous';
