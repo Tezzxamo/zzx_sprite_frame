@@ -25,23 +25,41 @@ function colorDistanceYUV(r1: number, g1: number, b1: number, r2: number, g2: nu
   return Math.sqrt(dy * dy + du * du + dv * dv);
 }
 
-// 对 ImageData 应用 Chroma Key
+// 对 ImageData 应用 Chroma Key（支持保留阴影）
 function applyChromaKey(
   imageData: ImageData,
   keyColor: { r: number; g: number; b: number },
   similarity: number,
-  blend: number
+  blend: number,
+  keepShadow: boolean
 ): ImageData {
   const data = imageData.data;
   const maxDist = 441.67;
   const threshold = similarity * maxDist;
   const blendStart = threshold * (1 - blend);
 
+  // 目标颜色亮度（YUV 的 Y 通道）
+  const keyLuma = 0.299 * keyColor.r + 0.587 * keyColor.g + 0.114 * keyColor.b;
+  const shadowThreshold = keyLuma * 0.55; // 亮度低于背景 55% 认为是阴影
+
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i];
     const g = data[i + 1];
     const b = data[i + 2];
+
     const dist = colorDistanceYUV(r, g, b, keyColor.r, keyColor.g, keyColor.b);
+
+    // 阴影保护：如果像素明显比背景暗，且开启保留阴影，则跳过
+    if (keepShadow) {
+      const pixelLuma = 0.299 * r + 0.587 * g + 0.114 * b;
+      if (pixelLuma < shadowThreshold) {
+        // 阴影区域：只有当颜色距离非常近时才去除（避免绿色边缘残留）
+        if (dist < blendStart * 0.5) {
+          data[i + 3] = 0;
+        }
+        continue;
+      }
+    }
 
     if (dist < blendStart) {
       data[i + 3] = 0;
@@ -142,7 +160,7 @@ export default function PreviewPanel() {
     // 3. 应用绿幕
     if (chromaKey.enabled) {
       const keyColor = hexToRgb(chromaKey.color);
-      imageData = applyChromaKey(imageData, keyColor, chromaKey.similarity, chromaKey.blend);
+      imageData = applyChromaKey(imageData, keyColor, chromaKey.similarity, chromaKey.blend, chromaKey.keepShadow);
       offCtx.putImageData(imageData, 0, 0);
     }
 

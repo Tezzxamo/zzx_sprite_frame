@@ -58,8 +58,9 @@ const defaultExtractSettings: ExtractSettings = {
   chromaKey: {
     enabled: false,
     color: '#00FF00',
-    similarity: 0.4,
+    similarity: 0.35,
     blend: 0.0,
+    keepShadow: true,
   },
 };
 

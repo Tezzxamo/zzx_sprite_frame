@@ -69,9 +69,15 @@ async function extractFramesToTemp(
     // 绿幕抠图
     if (settings.chromaKey.enabled) {
       const color = hexToColorkey(settings.chromaKey.color);
-      const sim = settings.chromaKey.similarity.toFixed(3);
+      // 保留阴影时降低相似度，避免暗部（阴影）被一并去除
+      let sim = settings.chromaKey.similarity;
+      if (settings.chromaKey.keepShadow) {
+        sim = Math.max(0.1, sim - 0.15);
+      }
+      const simStr = sim.toFixed(3);
       const blend = settings.chromaKey.blend.toFixed(3);
-      filters.push(`colorkey=${color}:${sim}:${blend}`);
+      // 使用 chromakey（比 colorkey 对边缘/暗部处理更智能）
+      filters.push(`chromakey=${color}:${simStr}:${blend}`);
     }
 
     if (filters.length > 0) {

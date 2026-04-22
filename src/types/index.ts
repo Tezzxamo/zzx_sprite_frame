@@ -25,6 +25,7 @@ export interface ChromaKeyConfig {
   color: string;      // 十六进制颜色，如 '#00FF00'
   similarity: number; // 0.01 ~ 1.0
   blend: number;      // 0.0 ~ 1.0
+  keepShadow: boolean;// 保留阴影（保护暗部像素）
 }
 
 // 提取设置

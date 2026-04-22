@@ -153,6 +153,19 @@ export default function ExtractSettings() {
                 />
               </div>
 
+              {/* 保留阴影 */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">保留阴影</span>
+                <button
+                  className={`relative w-9 h-5 rounded-full transition-colors ${chromaKey.keepShadow ? 'bg-green-500' : 'bg-gray-600'}`}
+                  onClick={() => setExtractSettings({
+                    chromaKey: { ...chromaKey, keepShadow: !chromaKey.keepShadow }
+                  })}
+                >
+                  <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${chromaKey.keepShadow ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+
               {/* 相似度 */}
               <div>
                 <div className="flex justify-between mb-1">
