@@ -22,6 +22,9 @@ function createWindow(): void {
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,
+      // 开发模式下关闭 webSecurity，允许 http://localhost 加载 file:// 视频
+      // 生产模式使用 file:// 协议加载页面，天然同源，不受影响
+      webSecurity: app.isPackaged,
     }
   })
 

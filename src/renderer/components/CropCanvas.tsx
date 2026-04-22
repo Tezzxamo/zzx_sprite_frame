@@ -289,14 +289,12 @@ export default function CropCanvas() {
         onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
         onEnded={() => setIsPlaying(false)}
         onLoadedData={() => {
-          // 视频第一帧加载完成，尝试绘制到 canvas（用于后续扩展）
-          const video = videoRef.current;
-          if (video) {
-            video.currentTime = 0;
-          }
+          // 视频数据已加载，确保显示第一帧
+          console.log('[视频] 数据加载完成');
         }}
         onError={(e) => {
-          console.error('[视频加载错误]', e);
+          const video = e.currentTarget;
+          console.error('[视频加载错误]', video.error?.code, video.error?.message);
         }}
       />
 
