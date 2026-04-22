@@ -19,9 +19,11 @@ function getFfmpegPath(): string | undefined {
 // 查找 FFprobe 可执行文件路径
 function getFfprobePath(): string | undefined {
   try {
+    // ffprobe-static 导出的是 { path: string } 对象，不是字符串
     const ffprobeStatic = require('ffprobe-static');
-    if (ffprobeStatic && fs.existsSync(ffprobeStatic)) {
-      return ffprobeStatic;
+    const ffprobePath = ffprobeStatic?.path || ffprobeStatic;
+    if (ffprobePath && typeof ffprobePath === 'string' && fs.existsSync(ffprobePath)) {
+      return ffprobePath;
     }
   } catch {
     // ffprobe-static 未安装或路径无效
