@@ -274,6 +274,7 @@ export default function CropCanvas() {
       {/* 视频元素 */}
       <video
         ref={videoRef}
+        key={videoInfo.path}
         src={window.electronAPI.getVideoFileUrl(videoInfo.path)}
         className="absolute"
         style={{
@@ -284,8 +285,19 @@ export default function CropCanvas() {
         }}
         muted
         playsInline
+        preload="auto"
         onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
         onEnded={() => setIsPlaying(false)}
+        onLoadedData={() => {
+          // 视频第一帧加载完成，尝试绘制到 canvas（用于后续扩展）
+          const video = videoRef.current;
+          if (video) {
+            video.currentTime = 0;
+          }
+        }}
+        onError={(e) => {
+          console.error('[视频加载错误]', e);
+        }}
       />
 
       {/* Canvas 覆盖层（用于绘制裁剪框和参考线） */}
