@@ -17,6 +17,12 @@ export function cancelOperation(): void {
   isCancelled = true;
 }
 
+// 将十六进制颜色转换为 0xRRGGBB 格式（供 FFmpeg colorkey 使用）
+function hexToColorkey(hex: string): string {
+  const clean = hex.replace('#', '');
+  return `0x${clean}`;
+}
+
 // 提取帧到临时目录
 async function extractFramesToTemp(
   videoInfo: VideoInfo,
@@ -25,46 +31,56 @@ async function extractFramesToTemp(
   onProgress: (progress: ExportProgress) => void
 ): Promise<string[]> {
   isCancelled = false;
-  
+
   // 清理旧临时目录
   if (currentTempDir) {
     cleanupTempDir(currentTempDir);
   }
-  
+
   currentTempDir = getTempDir();
   const outputPattern = path.join(currentTempDir, 'frame_%04d.png');
-  
-  // 计算总帧数
-  const totalFrames = Math.floor(videoInfo.duration * settings.targetFps);
-  
+
+  // 计算截取后的时长和总帧数
+  const clipDuration = settings.endTime - settings.startTime;
+  const totalFrames = Math.floor(clipDuration * settings.targetFps);
+
   return new Promise((resolve, reject) => {
-    // frame files will be collected from temp dir
-    
     let command = ffmpeg(videoInfo.path)
+      .seekInput(settings.startTime)
+      .duration(clipDuration)
       .fps(settings.targetFps)
       .output(outputPattern);
-    
-    // 添加裁剪滤镜
+
+    // 构建滤镜链
     const filters: string[] = [];
-    
+
+    // 裁剪
     if (cropParams.width > 0 && cropParams.height > 0) {
       filters.push(`crop=${cropParams.width}:${cropParams.height}:${cropParams.x}:${cropParams.y}`);
     }
-    
-    // 添加缩放
+
+    // 缩放
     if (settings.scalePercent !== 100 && cropParams.width > 0 && cropParams.height > 0) {
       const newWidth = Math.round(cropParams.width * settings.scalePercent / 100);
       const newHeight = Math.round(cropParams.height * settings.scalePercent / 100);
       filters.push(`scale=${newWidth}:${newHeight}`);
     }
-    
+
+    // 绿幕抠图
+    if (settings.chromaKey.enabled) {
+      const color = hexToColorkey(settings.chromaKey.color);
+      const sim = settings.chromaKey.similarity.toFixed(3);
+      const blend = settings.chromaKey.blend.toFixed(3);
+      filters.push(`colorkey=${color}:${sim}:${blend}`);
+    }
+
     if (filters.length > 0) {
       command = command.videoFilters(filters);
     }
-    
-    // 处理输出格式（临时文件统一用 png，导出时再转换）
+
+    // 输出格式：带 alpha 通道
     command = command.outputOptions(['-pix_fmt rgba']);
-    
+
     command
       .on('start', () => {
         onProgress({
@@ -93,14 +109,14 @@ async function extractFramesToTemp(
           .filter(f => f.endsWith('.png'))
           .sort()
           .map(f => path.join(currentTempDir!, f));
-        
+
         onProgress({
           current: totalFrames,
           total: totalFrames,
           phase: 'extracting',
           message: '帧提取完成'
         });
-        
+
         resolve(files);
       })
       .on('error', (err) => {

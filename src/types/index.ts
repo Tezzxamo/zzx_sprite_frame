@@ -19,6 +19,14 @@ export interface CropParams {
   height: number;
 }
 
+// 绿幕配置
+export interface ChromaKeyConfig {
+  enabled: boolean;
+  color: string;      // 十六进制颜色，如 '#00FF00'
+  similarity: number; // 0.01 ~ 1.0
+  blend: number;      // 0.0 ~ 1.0
+}
+
 // 提取设置
 export interface ExtractSettings {
   targetFps: number;
@@ -27,6 +35,9 @@ export interface ExtractSettings {
   scalePercent: number; // 10-200
   namingPattern: string; // 如 "frame_{0001}"
   outputDir: string;
+  startTime: number; // 截取开始时间（秒）
+  endTime: number;   // 截取结束时间（秒）
+  chromaKey: ChromaKeyConfig;
 }
 
 // 帧信息

@@ -103,8 +103,9 @@ export default function CropParamsPanel() {
     return () => { cleanup(); };
   }, [setProgress]);
 
-  // 计算总帧数
-  const totalFrames = Math.floor(videoInfo.duration * extractSettings.targetFps);
+  // 计算截取后的时长和总帧数
+  const clipDuration = extractSettings.endTime - extractSettings.startTime;
+  const totalFrames = Math.floor(clipDuration * extractSettings.targetFps);
 
   return (
     <div className="p-3 space-y-3">

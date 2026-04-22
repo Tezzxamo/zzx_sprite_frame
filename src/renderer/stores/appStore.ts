@@ -53,6 +53,14 @@ const defaultExtractSettings: ExtractSettings = {
   scalePercent: 100,
   namingPattern: 'frame_{0001}',
   outputDir: '',
+  startTime: 0,
+  endTime: 0,
+  chromaKey: {
+    enabled: false,
+    color: '#00FF00',
+    similarity: 0.4,
+    blend: 0.0,
+  },
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -63,13 +71,18 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setVideoInfo: (info) => {
     set({ videoInfo: info });
     if (info) {
-      // 初始化裁剪参数为全屏
+      // 初始化裁剪参数为全屏，时间范围为完整视频
       set({
         cropParams: {
           x: 0,
           y: 0,
           width: info.width,
           height: info.height,
+        },
+        extractSettings: {
+          ...get().extractSettings,
+          startTime: 0,
+          endTime: info.duration,
         },
         viewMode: 'crop',
       });

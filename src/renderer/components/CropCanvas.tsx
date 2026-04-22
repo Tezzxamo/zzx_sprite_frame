@@ -274,6 +274,7 @@ export default function CropCanvas() {
       {/* 视频元素 */}
       <video
         ref={videoRef}
+        id="preview-video"
         key={videoInfo.path}
         src={window.electronAPI.getVideoFileUrl(videoInfo.path)}
         className="absolute"
